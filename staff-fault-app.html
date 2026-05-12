@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Fault Logger — Adams Joinery</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --primary: #4F6EF7; --primary-light: #EEF1FE;
+    --bg: #F0F2F7; --white: #FFFFFF; --border: #E4E8F0;
+    --text: #1A1F36; --muted: #6B7280;
+    --success: #10B981; --success-light: #D1FAE5;
+    --warning: #F59E0B; --warning-light: #FEF3C7;
+    --danger: #EF4444; --danger-light: #FEE2E2;
+    --info: #3B82F6; --info-light: #DBEAFE;
+    --purple: #7C3AED; --purple-light: #EDE9FE;
+    --sidebar: #1A1F36;
+  }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  #app { max-width: 480px; margin: 0 auto; min-height: 100vh; }
+
+  /* Utilities */
+  .hidden { display: none !important; }
+  .card { background: var(--white); border-radius: 14px; border: 1px solid var(--border); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; border: none; font-family: inherit; transition: opacity 0.15s; width: 100%; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-half { width: calc(50% - 5px); }
+  input, select, textarea { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); font-size: 14px; font-family: inherit; color: var(--text); background: var(--white); }
+  textarea { resize: vertical; }
+  label.field-label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* Login */
+  #login-screen { min-height: 100vh; background: var(--sidebar); display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .login-box { background: var(--white); border-radius: 20px; padding: 36px; width: 100%; max-width: 360px; box-shadow: 0 40px 80px rgba(0,0,0,0.35); }
+  .login-icon { width: 56px; height: 56px; background: var(--danger); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 16px; }
+  .login-title { font-size: 22px; font-weight: 800; text-align: center; }
+  .login-sub { font-size: 12px; color: var(--muted); text-align: center; margin-top: 4px; margin-bottom: 28px; }
+  .login-field { margin-bottom: 14px; }
+  .error-box { background: var(--danger-light); color: var(--danger); padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; margin-bottom: 16px; }
+  .info-box { background: var(--bg); border-radius: 10px; padding: 12px 14px; font-size: 11px; color: var(--muted); margin-top: 16px; line-height: 1.6; }
+
+  /* Header */
+  #app-header { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+  .header-top { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 10px; }
+  .header-logo { display: flex; align-items: center; gap: 10px; }
+  .header-icon { width: 32px; height: 32px; background: var(--danger); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .header-title { font-size: 13px; font-weight: 800; }
+  .header-sub { font-size: 10px; color: var(--muted); }
+  .signout-btn { background: none; border: none; font-size: 11px; color: var(--muted); cursor: pointer; font-weight: 700; font-family: inherit; }
+  .tabs { display: flex; padding: 0 16px; }
+  .tab-btn { flex: 1; padding: 10px 0; background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 500; font-family: inherit; color: var(--muted); border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .tab-btn.active { font-weight: 700; color: var(--danger); border-bottom-color: var(--danger); }
+
+  /* Content */
+  #app-content { padding: 20px 16px; }
+
+  /* Step form */
+  .progress-bar { display: flex; gap: 3px; margin-bottom: 20px; }
+  .progress-bar .seg { flex: 1; height: 4px; border-radius: 999px; background: var(--border); }
+  .progress-bar .seg.done { background: var(--danger); opacity: 0.35; }
+  .progress-bar .seg.active { background: var(--danger); }
+  .step-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .step-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; }
+
+  /* Type grid */
+  .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .type-tile { padding: 18px 10px; border-radius: 12px; border: 2px solid var(--border); background: var(--white); cursor: pointer; text-align: center; font-family: inherit; transition: all 0.15s; }
+  .type-tile.selected { border-color: var(--danger); background: var(--danger-light); }
+  .type-tile .tile-icon { font-size: 26px; margin-bottom: 6px; }
+  .type-tile .tile-label { font-size: 12px; font-weight: 700; color: var(--text); }
+  .type-tile.selected .tile-label { color: var(--danger); }
+
+  /* Severity */
+  .sev-option { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 12px; border: 2px solid var(--border); background: var(--white); cursor: pointer; margin-bottom: 10px; font-family: inherit; width: 100%; text-align: left; transition: all 0.15s; }
+  .sev-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+  .sev-label { font-size: 15px; font-weight: 800; }
+  .sev-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* Toggle */
+  .toggle-wrap { background: var(--bg); border-radius: 12px; padding: 16px; }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; }
+  .toggle-info .toggle-title { font-size: 14px; font-weight: 800; }
+  .toggle-info .toggle-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .toggle-switch { width: 48px; height: 26px; border-radius: 999px; background: var(--border); border: none; cursor: pointer; position: relative; flex-shrink: 0; transition: background 0.2s; }
+  .toggle-switch.on { background: var(--success); }
+  .toggle-knob { width: 20px; height: 20px; border-radius: 50%; background: #fff; position: absolute; top: 3px; left: 3px; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .toggle-switch.on .toggle-knob { left: 25px; }
+
+  /* Hours picker */
+  .hours-grid { display: flex; gap: 12px; align-items: center; }
+  .hours-col { flex: 1; text-align: center; }
+  .hours-col input, .hours-col select { font-size: 24px; font-weight: 800; text-align: center; padding: 14px 8px; }
+  .hours-sep { font-size: 22px; color: var(--muted); font-weight: 300; padding-bottom: 20px; }
+  .hours-unit { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* Review */
+  .review-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .review-key { color: var(--muted); font-weight: 600; }
+  .review-val { color: var(--text); font-weight: 700; text-align: right; max-width: 55%; }
+
+  /* Nav */
+  .nav-row { display: flex; gap: 10px; margin-top: 24px; }
+
+  /* Badge */
+  .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; }
+  .badge-pending { background: var(--warning-light); color: #92400E; }
+  .badge-approved { background: var(--info-light); color: #1E40AF; }
+  .badge-resolved { background: var(--success-light); color: #065F46; }
+  .badge-escalated { background: var(--purple-light); color: var(--purple); }
+  .badge-misuse { background: var(--danger-light); color: #991B1B; }
+
+  /* Fault card */
+  .fault-card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); padding: 16px; margin-bottom: 10px; }
+  .fault-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .fault-type-row { display: flex; align-items: center; gap: 8px; }
+  .fault-type-label { font-size: 14px; font-weight: 800; }
+  .fault-ref { font-size: 11px; background: var(--info-light); color: var(--info); padding: 1px 7px; border-radius: 20px; font-weight: 700; }
+  .fault-meta { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .fault-desc { font-size: 13px; line-height: 1.5; }
+  .hours-tag { font-size: 11px; color: var(--danger); font-weight: 700; margin-top: 6px; }
+
+  /* Photo */
+  .photo-drop { width: 100%; padding: 24px 16px; border: 2px dashed var(--border); border-radius: 12px; background: var(--bg); cursor: pointer; font-family: inherit; color: var(--muted); font-size: 13px; text-align: center; }
+  .photo-drop .drop-icon { font-size: 28px; margin-bottom: 6px; }
+  .photo-preview { width: 100%; border-radius: 10px; max-height: 200px; object-fit: cover; display: block; }
+
+  /* Alerts */
+  .alert { padding: 12px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; margin-bottom: 16px; }
+  .alert-success { background: var(--success-light); color: #065F46; font-size: 14px; border: 1px solid #6EE7B740; }
+  .alert-danger { background: var(--danger-light); color: var(--danger); }
+  .alert-info { background: var(--info-light); color: #1E40AF; font-weight: 400; }
+  .alert-warning { background: var(--warning-light); color: #92400E; }
+
+  .empty-state { padding: 48px 20px; text-align: center; }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .empty-sub { font-size: 13px; color: var(--muted); }
+
+  .loading { padding: 40px; text-align: center; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- ─── LOGIN ────────────────────────────────────────────── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-icon">⚠️</div>
+    <div class="login-title">Fault Logger</div>
+    <div class="login-sub">Adams Joinery Workshop</div>
+    <div class="login-field">
+      <label class="field-label">Work Email</label>
+      <input type="email" id="login-email" placeholder="test1@adamsjoinery.co.uk">
+    </div>
+    <div class="login-field">
+      <label class="field-label">Password</label>
+      <input type="password" id="login-password" placeholder="••••••••">
+    </div>
+    <div class="error-box hidden" id="login-error"></div>
+    <button class="btn btn-danger" id="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="info-box">
+      <strong>Test logins:</strong> test1@ to test10@adamsjoinery.co.uk<br>
+      Password: <strong>Test1234!</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MAIN APP ──────────────────────────────────────────── -->
+<div id="main-app" class="hidden">
+  <div id="app-header">
+    <div class="header-top">
+      <div class="header-logo">
+        <div class="header-icon">⚠️</div>
+        <div>
+          <div class="header-title">Fault Logger</div>
+          <div class="header-sub" id="header-name">Loading...</div>
+        </div>
+      </div>
+      <button class="signout-btn" onclick="doSignOut()">Sign out</button>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-log" onclick="switchTab('log')">Log Fault</button>
+      <button class="tab-btn" id="tab-mine" onclick="switchTab('mine')">My Submissions</button>
+    </div>
+  </div>
+  <div id="app-content"></div>
+</div>
+
+<script>
+// ─── Config ────────────────────────────────────────────────
+const SB_URL  = "https://gfsxcisiesurbtkodkll.supabase.co";
+const SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdmc3hjaXNpZXN1cmJ0a29ka2xsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzODg2MjUsImV4cCI6MjA5Mzk2NDYyNX0.jlv3yn7zDyLcWLYeZB4GsSRzJz0HsnuJq8VChQ7m4zI";
+
+const FAULT_TYPES = [
+  {id:"measurement",    label:"Measurement",      icon:"📏"},
+  {id:"finish_paint",   label:"Finish / Paint",   icon:"🎨"},
+  {id:"material",       label:"Material",         icon:"🪵"},
+  {id:"assembly",       label:"Assembly",         icon:"🔩"},
+  {id:"damage",         label:"Damage",           icon:"💥"},
+  {id:"design_drawing", label:"Design / Drawing", icon:"📐"},
+  {id:"cnc_machine",    label:"CNC / Machine",    icon:"⚙️"},
+  {id:"other",          label:"Other",            icon:"❓"},
+];
+
+const SEVERITIES = [
+  {id:"low",      label:"Low",      color:"#10B981", bg:"#D1FAE5", desc:"Minor — job can continue"},
+  {id:"medium",   label:"Medium",   color:"#F59E0B", bg:"#FEF3C7", desc:"Needs attention soon"},
+  {id:"high",     label:"High",     color:"#EF4444", bg:"#FEE2E2", desc:"Job affected — fix required"},
+  {id:"critical", label:"Critical", color:"#7C3AED", bg:"#EDE9FE", desc:"Job stopped — immediate action"},
+];
+
+const DEPTS = ["Mill","CNC","Veneer","Bench","Spray","Stores","Management"];
+
+// ─── State ─────────────────────────────────────────────────
+let state = {
+  token: null, user: null, step: 1, activeTab: "log",
+  form: { fault_type:"", severity:"", dept_found:"Test", dept_caused:"", job_ref:"", description:"", self_resolved:false, self_resolve_note:"", hours_h:"", hours_m:"0", photo_preview:null },
+};
+
+// ─── Supabase ──────────────────────────────────────────────
+async function sbFetch(path, opts = {}) {
+  const res = await fetch(`${SB_URL}/rest/v1/${path}`, {
+    headers: { apikey: SB_ANON, Authorization: `Bearer ${state.token || SB_ANON}`, "Content-Type": "application/json", Prefer: opts.prefer || "return=representation", ...opts.headers },
+    ...opts,
+  });
+  if (!res.ok) throw new Error(await res.text());
+  if (opts.method === "DELETE" || res.status === 204) return null;
+  return res.json().catch(() => null);
+}
+
+async function sbAuth(email, password) {
+  const res = await fetch(`${SB_URL}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: { apikey: SB_ANON, "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  return res.json();
+}
+
+// ─── Login ─────────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById("login-email").value.trim();
+  const pass  = document.getElementById("login-password").value;
+  const errEl = document.getElementById("login-error");
+  const btn   = document.getElementById("login-btn");
+  errEl.classList.add("hidden"); btn.disabled = true; btn.textContent = "Signing in...";
+
+  try {
+    const data = await sbAuth(email, pass);
+    if (data.error) throw new Error(data.error_description || data.error);
+    state.token = data.access_token;
+    localStorage.setItem("aj_fl_token", data.access_token);
+
+    const staff = await sbFetch(`staff?auth_user_id=eq.${data.user.id}&select=*`);
+    if (!staff || staff.length === 0) throw new Error("No staff record found. Contact your manager.");
+    state.user = staff[0];
+    state.form.dept_found = state.user.department || "Test";
+    localStorage.setItem("aj_fl_uid", state.user.id);
+
+    showApp();
+  } catch(e) {
+    errEl.textContent = e.message; errEl.classList.remove("hidden");
+  }
+  btn.disabled = false; btn.textContent = "Sign In";
+}
+
+document.getElementById("login-password").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+
+async function doSignOut() {
+  try { await fetch(`${SB_URL}/auth/v1/logout`, { method:"POST", headers:{ apikey:SB_ANON, Authorization:`Bearer ${state.token}` }}); } catch(e){}
+  localStorage.removeItem("aj_fl_token"); localStorage.removeItem("aj_fl_uid");
+  state.token = null; state.user = null;
+  document.getElementById("login-screen").classList.remove("hidden");
+  document.getElementById("main-app").classList.add("hidden");
+}
+
+function showApp() {
+  document.getElementById("login-screen").classList.add("hidden");
+  document.getElementById("main-app").classList.remove("hidden");
+  document.getElementById("header-name").textContent = state.user.full_name;
+  renderTab();
+}
+
+// ─── Session restore ───────────────────────────────────────
+window.addEventListener("load", async () => {
+  const token = localStorage.getItem("aj_fl_token");
+  const uid   = localStorage.getItem("aj_fl_uid");
+  if (token && uid) {
+    state.token = token;
+    try {
+      const staff = await sbFetch(`staff?id=eq.${uid}&select=*`);
+      if (staff?.[0]) { state.user = staff[0]; state.form.dept_found = state.user.department || "Test"; showApp(); return; }
+    } catch(e) {}
+    localStorage.removeItem("aj_fl_token"); localStorage.removeItem("aj_fl_uid");
+  }
+});
+
+// ─── Tab switching ─────────────────────────────────────────
+function switchTab(tab) {
+  state.activeTab = tab;
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById(`tab-${tab}`).classList.add("active");
+  renderTab();
+}
+
+function renderTab() {
+  if (state.activeTab === "log") renderLogForm();
+  else renderMySubmissions();
+}
+
+// ─── Log Fault Form ────────────────────────────────────────
+const STEPS = ["Type","Severity","Departments","Details","Resolution","Review"];
+
+function renderLogForm() {
+  const f = state.form;
+  const step = state.step;
+  let html = "";
+
+  // Progress
+  html += `<div class="progress-bar">`;
+  for (let i = 0; i < STEPS.length; i++) {
+    let cls = i < step - 1 ? "done" : i === step - 1 ? "active" : "";
+    html += `<div class="seg ${cls}"></div>`;
+  }
+  html += `</div>`;
+  html += `<div class="step-label">Step ${step} of ${STEPS.length}</div>`;
+  html += `<div class="step-title">${STEPS[step-1]}</div>`;
+
+  if (state.submitted) {
+    html += `<div class="alert alert-success">✅ Fault logged — awaiting manager approval</div>`;
+    state.submitted = false;
+  }
+  if (state.submitError) {
+    html += `<div class="alert alert-danger">${state.submitError}</div>`;
+    state.submitError = null;
+  }
+
+  // Step 1 — Type
+  if (step === 1) {
+    html += `<div class="type-grid">`;
+    FAULT_TYPES.forEach(ft => {
+      const sel = f.fault_type === ft.id ? "selected" : "";
+      html += `<button class="type-tile ${sel}" onclick="selectType('${ft.id}')"><div class="tile-icon">${ft.icon}</div><div class="tile-label">${ft.label}</div></button>`;
+    });
+    html += `</div>`;
+  }
+
+  // Step 2 — Severity
+  if (step === 2) {
+    SEVERITIES.forEach(sv => {
+      const sel = f.severity === sv.id;
+      html += `<button class="sev-option" onclick="selectSev('${sv.id}')" style="border-color:${sel ? sv.color : "var(--border)"}; background:${sel ? sv.bg : "var(--white)"};">
+        <div class="sev-dot" style="background:${sv.color}"></div>
+        <div><div class="sev-label" style="color:${sel ? sv.color : "var(--text)"}">${sv.label}</div><div class="sev-desc">${sv.desc}</div></div>
+      </button>`;
+    });
+  }
+
+  // Step 3 — Departments
+  if (step === 3) {
+    if (!f.dept_found) state.form.dept_found = "Bench";
+    if (!f.dept_caused) state.form.dept_caused = "Bench";
+    const deptOpts = DEPTS.map(d => `<option ${(f.dept_found||"Bench")===d?"selected":""}>${d}</option>`).join("");
+    const causedOpts = DEPTS.map(d => `<option ${(f.dept_caused||"Bench")===d?"selected":""}>${d}</option>`).join("");
+    html += `<div style="margin-bottom:16px"><label class="field-label">Where was the fault found?</label>
+      <select onchange="setForm('dept_found',this.value)">${deptOpts}</select></div>`;
+    html += `<div style="margin-bottom:16px"><label class="field-label">Which department caused it?</label>
+      <select onchange="setForm('dept_caused',this.value)">${causedOpts}</select></div>`;
+    html += `<div class="alert alert-info">💡 Best guess is fine — manager can edit on approval.</div>`;
+  }
+
+  // Step 4 — Details
+  if (step === 4) {
+    html += `<div style="margin-bottom:16px">
+      <label class="field-label">Job Ref (optional)</label>
+      <input type="text" value="${f.job_ref}" oninput="setForm('job_ref',this.value)" placeholder="e.g. 5099-4">
+    </div>`;
+    html += `<div style="margin-bottom:16px">
+      <label class="field-label">Description</label>
+      <textarea rows="4" oninput="setForm('description',this.value);updateNextBtn()" placeholder="Describe the fault clearly...">${f.description}</textarea>
+    </div>`;
+    html += `<div>
+      <label class="field-label">Photo Evidence</label>
+      <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(this)">`;
+    if (f.photo_preview) {
+      html += `<div style="position:relative"><img src="${f.photo_preview}" class="photo-preview">
+        <button onclick="clearPhoto()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.6);border:none;border-radius:50%;width:28px;height:28px;color:#fff;cursor:pointer;font-size:14px">×</button></div>`;
+    } else {
+      html += `<button class="photo-drop" onclick="document.getElementById('photo-input').click()"><div class="drop-icon">📸</div>Tap to take photo or choose from gallery</button>`;
+    }
+    html += `</div>`;
+  }
+
+  // Step 5 — Resolution
+  if (step === 5) {
+    html += `<div style="margin-bottom:20px">
+      <label class="field-label">Hours Lost (optional)</label>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">How much time did this fault cost?</div>
+      <div class="hours-grid">
+        <div class="hours-col">
+          <input type="number" min="0" max="99" value="${f.hours_h}" oninput="setForm('hours_h',this.value)" placeholder="0">
+          <div class="hours-unit">Hours</div>
+        </div>
+        <div class="hours-sep">:</div>
+        <div class="hours-col">
+          <select onchange="setForm('hours_m',this.value)">
+            ${["0","15","30","45"].map(m => `<option value="${m}" ${f.hours_m===m?"selected":""}>${m.padStart(2,"0")}</option>`).join("")}
+          </select>
+          <div class="hours-unit">Minutes</div>
+        </div>
+      </div>
+      ${(f.hours_h || f.hours_m > 0) ? `<div class="alert alert-danger" style="margin-top:10px">⏱ ${f.hours_h||0}h ${f.hours_m||0}m recorded</div>` : ""}
+    </div>`;
+
+    html += `<div class="toggle-wrap">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-title">Self-Resolved</div>
+          <div class="toggle-sub">I've already fixed this</div>
+        </div>
+        <button class="toggle-switch ${f.self_resolved?"on":""}" onclick="toggleSelfResolve()">
+          <div class="toggle-knob"></div>
+        </button>
+      </div>
+      ${f.self_resolved ? `<div style="margin-top:14px"><textarea rows="3" oninput="setForm('self_resolve_note',this.value)" placeholder="How did you fix it?">${f.self_resolve_note}</textarea></div>` : ""}
+    </div>`;
+  }
+
+  // Step 6 — Review
+  if (step === 6) {
+    const ft = FAULT_TYPES.find(x => x.id === f.fault_type) || {label:f.fault_type, icon:"❓"};
+    const hoursStr = (f.hours_h || f.hours_m > 0) ? `${f.hours_h||0}h ${f.hours_m||0}m` : "Not recorded";
+    html += `<div class="card" style="padding:18px;margin-bottom:16px">`;
+    [["Type",`${ft.icon} ${ft.label}`],["Severity",f.severity],["Found in",f.dept_found],["Caused by",f.dept_caused],["Job Ref",f.job_ref||"Not specified"],["Hours Lost",hoursStr],["Self-Resolved",f.self_resolved?"Yes":"No"]]
+      .forEach(([k,v]) => { html += `<div class="review-row"><span class="review-key">${k}</span><span class="review-val">${v}</span></div>`; });
+    html += `<div style="padding-top:12px"><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px">Description</div>
+      <div style="font-size:13px;line-height:1.5">${f.description}</div></div>`;
+    if (f.self_resolved) html += `<div style="padding-top:10px"><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px">Resolution</div><div style="font-size:13px">${f.self_resolve_note}</div></div>`;
+    html += `</div>`;
+    html += `<div class="alert alert-warning">⏳ ${f.self_resolved ? "Flagged as self-resolved — manager will sign off." : "Held for manager approval before being recorded."}</div>`;
+  }
+
+  // Nav
+  html += `<div class="nav-row">`;
+  if (step > 1) html += `<button class="btn btn-secondary btn-half" onclick="prevStep()">← Back</button>`;
+  if (step < 6) {
+    html += `<button class="btn btn-danger ${step === 1 ? "" : "btn-half"}" id="next-btn" onclick="nextStep()" ${canNext() ? "" : "disabled"}>Next →</button>`;
+  } else {
+    html += `<button class="btn btn-danger btn-half" id="submit-btn" onclick="submitFault()">Submit Fault</button>`;
+  }
+  html += `</div>`;
+
+  document.getElementById("app-content").innerHTML = html;
+}
+
+function canNext() {
+  const f = state.form;
+  if (state.step === 1) return f.fault_type !== "";
+  if (state.step === 2) return f.severity !== "";
+  if (state.step === 3) return f.dept_found !== "" && f.dept_caused !== "";
+  if (state.step === 4) return f.description.length > 5;
+  if (state.step === 5) return !f.self_resolved || f.self_resolve_note.length > 5;
+  return true;
+}
+
+function updateNextBtn() {
+  const btn = document.getElementById("next-btn");
+  if (btn) btn.disabled = !canNext();
+}
+
+function selectType(id) { state.form.fault_type = id; renderLogForm(); }
+function selectSev(id) { state.form.severity = id; renderLogForm(); }
+function setForm(key, val) { state.form[key] = val; updateNextBtn(); }
+function toggleSelfResolve() { state.form.self_resolved = !state.form.self_resolved; renderLogForm(); }
+function prevStep() { if (state.step > 1) { state.step--; renderLogForm(); } }
+function nextStep() { if (canNext() && state.step < 6) { state.step++; renderLogForm(); } }
+
+function handlePhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { state.form.photo_preview = e.target.result; renderLogForm(); };
+  reader.readAsDataURL(file);
+}
+
+function clearPhoto() { state.form.photo_preview = null; renderLogForm(); }
+
+async function submitFault() {
+  const f = state.form;
+  const btn = document.getElementById("submit-btn");
+  btn.disabled = true; btn.textContent = "Submitting...";
+
+  try {
+    const hours = (parseFloat(f.hours_h)||0) + ((parseFloat(f.hours_m)||0)/60);
+    await sbFetch("faults", {
+      method:"POST", prefer:"return=minimal",
+      body: JSON.stringify({
+        fault_type: f.fault_type, severity: f.severity,
+        description: f.description, dept_found: f.dept_found, dept_caused: f.dept_caused,
+        job_ref: f.job_ref || null, reported_by: state.user.id,
+        self_resolved: f.self_resolved, self_resolve_note: f.self_resolve_note || null,
+        hours_to_overcome: hours > 0 ? parseFloat(hours.toFixed(2)) : null,
+        status: "pending",
+      }),
+    });
+    state.form = { fault_type:"", severity:"", dept_found:state.user.department||"Test", dept_caused:"", job_ref:"", description:"", self_resolved:false, self_resolve_note:"", hours_h:"", hours_m:"0", photo_preview:null };
+    state.step = 1;
+    state.submitted = true;
+    renderLogForm();
+  } catch(e) {
+    state.submitError = "Failed to submit. Check connection and try again: " + e.message;
+    renderLogForm();
+  }
+}
+
+// ─── My Submissions ────────────────────────────────────────
+async function renderMySubmissions() {
+  document.getElementById("app-content").innerHTML = `<div class="loading">Loading...</div>`;
+  try {
+    const faults = await sbFetch(`faults?reported_by=eq.${state.user.id}&order=submitted_at.desc&select=*`);
+    if (!faults || faults.length === 0) {
+      document.getElementById("app-content").innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">No submissions yet</div><div class="empty-sub">Faults you log will appear here</div></div>`;
+      return;
+    }
+
+    let html = "";
+    faults.forEach(f => {
+      const ft = FAULT_TYPES.find(x => x.id === f.fault_type) || {label:f.fault_type, icon:"❓"};
+      const date = new Date(f.submitted_at).toLocaleDateString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+      const sev = {low:"#10B981",medium:"#F59E0B",high:"#EF4444",critical:"#7C3AED"}[f.severity]||"#6B7280";
+      html += `<div class="fault-card">
+        <div class="fault-header">
+          <div class="fault-type-row">
+            <span style="font-size:16px">${ft.icon}</span>
+            <span class="fault-type-label">${ft.label}</span>
+            ${f.job_ref ? `<span class="fault-ref">${f.job_ref}</span>` : ""}
+          </div>
+          <div>
+            <div class="badge badge-${f.status}">${f.status.charAt(0).toUpperCase()+f.status.slice(1)}</div>
+            <div style="width:10px;height:10px;border-radius:50%;background:${sev};margin:4px auto 0"></div>
+          </div>
+        </div>
+        <div class="fault-meta">${date}</div>
+        <div class="fault-desc">${f.description}</div>
+        ${f.hours_to_overcome > 0 ? `<div class="hours-tag">⏱ ${Math.floor(f.hours_to_overcome)}h ${Math.round((f.hours_to_overcome%1)*60)}m lost</div>` : ""}
+      </div>`;
+    });
+    document.getElementById("app-content").innerHTML = html;
+  } catch(e) {
+    document.getElementById("app-content").innerHTML = `<div class="alert alert-danger">Failed to load: ${e.message}</div>`;
+  }
+}
+</script>
+</body>
+</html>
