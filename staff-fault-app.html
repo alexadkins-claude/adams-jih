@@ -172,6 +172,17 @@
   .empty-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
   .empty-sub { font-size: 13px; color: var(--muted); }
   .loading { padding: 40px; text-align: center; color: var(--muted); font-size: 13px; }
+
+  /* ── Feedback modal ── */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100; display: flex; align-items: flex-end; justify-content: center; padding: 0; }
+  .modal-sheet { background: var(--card-bg); border-radius: 20px 20px 0 0; width: 100%; max-width: 480px; padding: 28px 20px 36px; animation: slideUp 0.25s ease; }
+  @keyframes slideUp { from { transform: translateY(100%); opacity:0; } to { transform: translateY(0); opacity:1; } }
+  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 99px; margin: 0 auto 20px; }
+  .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 18px; }
+  .fb-cat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+  .fb-cat-btn { padding: 12px 8px; border-radius: 10px; border: 2px solid var(--border); background: var(--card-bg); font-family: inherit; font-size: 12px; font-weight: 700; color: var(--text); cursor: pointer; text-align: center; transition: all 0.15s; line-height: 1.3; }
+  .fb-cat-btn.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+  .fb-success { background: var(--success-light); color: #065F46; padding: 14px; border-radius: 10px; font-size: 13px; font-weight: 700; text-align: center; }
 </style>
 </head>
 <body>
@@ -219,6 +230,7 @@
         </div>
       </div>
       <div class="header-actions">
+        <button class="dark-toggle" onclick="openFeedback()" title="Send feedback">💬</button>
         <button class="dark-toggle" onclick="toggleDark()" id="dark-btn" title="Toggle dark mode">🌙</button>
         <button class="signout-btn" onclick="doSignOut()">Sign out</button>
       </div>
@@ -229,6 +241,27 @@
     </div>
   </div>
   <div id="app-content"></div>
+</div>
+
+<!-- ─── FEEDBACK MODAL ──────────────────────────────────── -->
+<div id="feedback-modal" class="modal-overlay hidden" onclick="closeFeedbackOnOverlay(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Send Feedback</div>
+    <div id="fb-body">
+      <label class="field-label" style="margin-bottom:10px">Category</label>
+      <div class="fb-cat-grid">
+        <button class="fb-cat-btn" id="fbc-quick" onclick="selectFbCat('quick_options')">Quick Options</button>
+        <button class="fb-cat-btn" id="fbc-app_issue" onclick="selectFbCat('app_issue')">App Issue</button>
+        <button class="fb-cat-btn" id="fbc-general" onclick="selectFbCat('general')">General</button>
+      </div>
+      <label class="field-label" style="margin-bottom:6px">Your feedback</label>
+      <textarea id="fb-text" rows="4" placeholder="Tell us what you think..." style="margin-bottom:16px"></textarea>
+      <div class="alert alert-danger hidden" id="fb-error" style="margin-bottom:12px"></div>
+      <button class="btn btn-primary" onclick="submitFeedback()">Send Feedback</button>
+      <button class="btn btn-secondary" style="margin-top:8px" onclick="closeFeedback()">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -369,6 +402,87 @@ let state = {
     active_chips: [], active_resolve_chips: [],
   },
 };
+
+// ─── Feedback ──────────────────────────────────────────────
+let fbCat = "";
+
+function openFeedback() {
+  fbCat = "";
+  document.getElementById("fb-text").value = "";
+  document.getElementById("fb-error").classList.add("hidden");
+  document.getElementById("fb-body").innerHTML = document.getElementById("fb-body").innerHTML; // reset
+  // Re-render fresh
+  document.getElementById("fb-body").innerHTML = `
+    <label class="field-label" style="margin-bottom:10px">Category</label>
+    <div class="fb-cat-grid">
+      <button class="fb-cat-btn" id="fbc-quick_options" onclick="selectFbCat('quick_options')">Quick Options</button>
+      <button class="fb-cat-btn" id="fbc-app_issue" onclick="selectFbCat('app_issue')">App Issue</button>
+      <button class="fb-cat-btn" id="fbc-general" onclick="selectFbCat('general')">General</button>
+    </div>
+    <label class="field-label" style="margin-bottom:6px">Your feedback</label>
+    <textarea id="fb-text" rows="4" placeholder="Tell us what you think..." style="margin-bottom:16px;width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);font-size:14px;font-family:inherit;color:var(--text);background:var(--input-bg);resize:vertical"></textarea>
+    <div class="alert alert-danger hidden" id="fb-error" style="margin-bottom:12px"></div>
+    <button class="btn btn-primary" onclick="submitFeedback()">Send Feedback</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeFeedback()">Cancel</button>
+  `;
+  document.getElementById("feedback-modal").classList.remove("hidden");
+}
+
+function selectFbCat(cat) {
+  fbCat = cat;
+  document.querySelectorAll(".fb-cat-btn").forEach(b => b.classList.remove("selected"));
+  const btn = document.getElementById(`fbc-${cat}`);
+  if (btn) btn.classList.add("selected");
+  // Update placeholder based on category
+  const ta = document.getElementById("fb-text");
+  if (!ta) return;
+  const placeholders = {
+    quick_options: "e.g. Add 'wrong thickness' to Mill options, or remove 'Joint visible' from Veneer...",
+    app_issue: "e.g. The photo button isn't working on step 3...",
+    general: "Anything else on your mind...",
+  };
+  ta.placeholder = placeholders[cat] || "Tell us what you think...";
+}
+
+function closeFeedback() {
+  document.getElementById("feedback-modal").classList.add("hidden");
+}
+
+function closeFeedbackOnOverlay(e) {
+  if (e.target === document.getElementById("feedback-modal")) closeFeedback();
+}
+
+async function submitFeedback() {
+  const text = (document.getElementById("fb-text").value || "").trim();
+  const errEl = document.getElementById("fb-error");
+  errEl.classList.add("hidden");
+
+  if (!fbCat) { errEl.textContent = "Please select a category."; errEl.classList.remove("hidden"); return; }
+  if (!text) { errEl.textContent = "Please write something before sending."; errEl.classList.remove("hidden"); return; }
+
+  const submitBtn = document.querySelector("#fb-body .btn-primary");
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Sending..."; }
+
+  try {
+    const payload = {
+      fault_type: "feedback",
+      severity: "standard",
+      description: `[${fbCat.replace("_"," ").toUpperCase()}] ${text}`,
+      reported_by: state.user.id,
+      self_resolved: false,
+      status: "pending",
+    };
+    if (state.token !== "local_stub") {
+      await sbFetch("faults", { method:"POST", prefer:"return=minimal", body: JSON.stringify(payload) });
+    }
+    document.getElementById("fb-body").innerHTML = `<div class="fb-success">✅ Thanks! Your feedback has been sent to the manager.</div>
+      <button class="btn btn-secondary" style="margin-top:16px" onclick="closeFeedback()">Close</button>`;
+  } catch(e) {
+    errEl.textContent = "Failed to send. Check your connection.";
+    errEl.classList.remove("hidden");
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Send Feedback"; }
+  }
+}
 
 // ─── Dark mode ─────────────────────────────────────────────
 function toggleDark() {
