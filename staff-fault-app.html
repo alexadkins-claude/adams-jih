@@ -7,6 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── Light theme ── */
   :root {
     --primary: #4F6EF7; --primary-light: #EEF1FE;
     --bg: #F0F2F7; --white: #FFFFFF; --border: #E4E8F0;
@@ -17,13 +19,33 @@
     --info: #3B82F6; --info-light: #DBEAFE;
     --purple: #7C3AED; --purple-light: #EDE9FE;
     --sidebar: #1A1F36;
+    --card-bg: #FFFFFF;
+    --input-bg: #FFFFFF;
+    --header-bg: #FFFFFF;
+    --toggle-track: #E4E8F0;
+    --critical: #DC2626; --critical-light: #FEE2E2;
   }
-  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── Dark theme ── */
+  [data-theme="dark"] {
+    --bg: #0F1117; --white: #1C1F2E; --border: #2A2F45;
+    --text: #E8EAF0; --muted: #8B93B5;
+    --primary-light: #1E2340; --danger-light: #2D1515;
+    --success-light: #0D2E22; --warning-light: #2D2005;
+    --info-light: #0D1C35; --purple-light: #1E1035;
+    --sidebar: #0A0C14;
+    --card-bg: #1C1F2E;
+    --input-bg: #14172A;
+    --header-bg: #1C1F2E;
+    --toggle-track: #2A2F45;
+    --critical-light: #2D1515;
+  }
+
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.2s, color 0.2s; }
   #app { max-width: 480px; margin: 0 auto; min-height: 100vh; }
 
-  /* Utilities */
   .hidden { display: none !important; }
-  .card { background: var(--white); border-radius: 14px; border: 1px solid var(--border); }
+  .card { background: var(--card-bg); border-radius: 14px; border: 1px solid var(--border); }
   .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; border: none; font-family: inherit; transition: opacity 0.15s; width: 100%; }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .btn-primary { background: var(--primary); color: #fff; }
@@ -31,36 +53,37 @@
   .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
   .btn-success { background: var(--success); color: #fff; }
   .btn-half { width: calc(50% - 5px); }
-  input, select, textarea { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); font-size: 14px; font-family: inherit; color: var(--text); background: var(--white); }
+  input, select, textarea { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); font-size: 14px; font-family: inherit; color: var(--text); background: var(--input-bg); transition: background 0.2s, border 0.2s, color 0.2s; }
   textarea { resize: vertical; }
   label.field-label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
 
-  /* Login */
+  /* ── Login ── */
   #login-screen { min-height: 100vh; background: var(--sidebar); display: flex; align-items: center; justify-content: center; padding: 20px; }
-  .login-box { background: var(--white); border-radius: 20px; padding: 36px; width: 100%; max-width: 360px; box-shadow: 0 40px 80px rgba(0,0,0,0.35); }
+  .login-box { background: var(--card-bg); border-radius: 20px; padding: 36px; width: 100%; max-width: 360px; box-shadow: 0 40px 80px rgba(0,0,0,0.35); }
   .login-icon { width: 56px; height: 56px; background: var(--danger); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 16px; }
   .login-title { font-size: 22px; font-weight: 800; text-align: center; }
   .login-sub { font-size: 12px; color: var(--muted); text-align: center; margin-top: 4px; margin-bottom: 28px; }
   .login-field { margin-bottom: 14px; }
   .error-box { background: var(--danger-light); color: var(--danger); padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; margin-bottom: 16px; }
-  .info-box { background: var(--bg); border-radius: 10px; padding: 12px 14px; font-size: 11px; color: var(--muted); margin-top: 16px; line-height: 1.6; }
 
-  /* Header */
-  #app-header { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+  /* ── Header ── */
+  #app-header { background: var(--header-bg); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; transition: background 0.2s; }
   .header-top { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 10px; }
   .header-logo { display: flex; align-items: center; gap: 10px; }
   .header-icon { width: 32px; height: 32px; background: var(--danger); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
   .header-title { font-size: 13px; font-weight: 800; }
   .header-sub { font-size: 10px; color: var(--muted); }
+  .header-actions { display: flex; align-items: center; gap: 10px; }
   .signout-btn { background: none; border: none; font-size: 11px; color: var(--muted); cursor: pointer; font-weight: 700; font-family: inherit; }
+  .dark-toggle { background: none; border: 1px solid var(--border); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; color: var(--muted); }
   .tabs { display: flex; padding: 0 16px; }
   .tab-btn { flex: 1; padding: 10px 0; background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 500; font-family: inherit; color: var(--muted); border-bottom: 2px solid transparent; transition: all 0.15s; }
   .tab-btn.active { font-weight: 700; color: var(--danger); border-bottom-color: var(--danger); }
 
-  /* Content */
+  /* ── Content ── */
   #app-content { padding: 20px 16px; }
 
-  /* Step form */
+  /* ── Progress ── */
   .progress-bar { display: flex; gap: 3px; margin-bottom: 20px; }
   .progress-bar .seg { flex: 1; height: 4px; border-radius: 999px; background: var(--border); }
   .progress-bar .seg.done { background: var(--danger); opacity: 0.35; }
@@ -68,69 +91,76 @@
   .step-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
   .step-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; }
 
-  /* Type grid */
-  .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .type-tile { padding: 18px 10px; border-radius: 12px; border: 2px solid var(--border); background: var(--white); cursor: pointer; text-align: center; font-family: inherit; transition: all 0.15s; }
+  /* ── Type grid — text only, no icons ── */
+  .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .type-tile { padding: 14px 10px; border-radius: 12px; border: 2px solid var(--border); background: var(--card-bg); cursor: pointer; text-align: center; font-family: inherit; transition: all 0.15s; }
   .type-tile.selected { border-color: var(--danger); background: var(--danger-light); }
-  .type-tile .tile-icon { font-size: 26px; margin-bottom: 6px; }
-  .type-tile .tile-label { font-size: 12px; font-weight: 700; color: var(--text); }
+  .type-tile .tile-label { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.3; }
   .type-tile.selected .tile-label { color: var(--danger); }
 
-  /* Severity */
-  .sev-option { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 12px; border: 2px solid var(--border); background: var(--white); cursor: pointer; margin-bottom: 10px; font-family: inherit; width: 100%; text-align: left; transition: all 0.15s; }
-  .sev-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
-  .sev-label { font-size: 15px; font-weight: 800; }
+  /* ── Severity — 2 options only ── */
+  .sev-option { display: flex; align-items: center; gap: 14px; padding: 18px 18px; border-radius: 12px; border: 2px solid var(--border); background: var(--card-bg); cursor: pointer; margin-bottom: 10px; font-family: inherit; width: 100%; text-align: left; transition: all 0.15s; }
+  .sev-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; }
+  .sev-label { font-size: 16px; font-weight: 800; }
   .sev-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
-  /* Toggle */
+  /* ── Quick options chips ── */
+  .quick-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
+  .quick-chip { padding: 7px 13px; border-radius: 20px; border: 1px solid var(--border); background: var(--card-bg); font-size: 12px; font-weight: 600; color: var(--text); cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .quick-chip:hover { border-color: var(--danger); color: var(--danger); }
+  .quick-chip.active { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
+
+  /* ── Toggle ── */
   .toggle-wrap { background: var(--bg); border-radius: 12px; padding: 16px; }
   .toggle-row { display: flex; align-items: center; justify-content: space-between; }
   .toggle-info .toggle-title { font-size: 14px; font-weight: 800; }
   .toggle-info .toggle-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .toggle-switch { width: 48px; height: 26px; border-radius: 999px; background: var(--border); border: none; cursor: pointer; position: relative; flex-shrink: 0; transition: background 0.2s; }
+  .toggle-switch { width: 48px; height: 26px; border-radius: 999px; background: var(--toggle-track); border: none; cursor: pointer; position: relative; flex-shrink: 0; transition: background 0.2s; }
   .toggle-switch.on { background: var(--success); }
   .toggle-knob { width: 20px; height: 20px; border-radius: 50%; background: #fff; position: absolute; top: 3px; left: 3px; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
   .toggle-switch.on .toggle-knob { left: 25px; }
 
-  /* Hours picker */
+  /* ── Hours ── */
   .hours-grid { display: flex; gap: 12px; align-items: center; }
   .hours-col { flex: 1; text-align: center; }
   .hours-col input, .hours-col select { font-size: 24px; font-weight: 800; text-align: center; padding: 14px 8px; }
   .hours-sep { font-size: 22px; color: var(--muted); font-weight: 300; padding-bottom: 20px; }
   .hours-unit { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
-  /* Review */
+  /* ── Review ── */
   .review-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
   .review-key { color: var(--muted); font-weight: 600; }
-  .review-val { color: var(--text); font-weight: 700; text-align: right; max-width: 55%; }
+  .review-val { color: var(--text); font-weight: 700; text-align: right; max-width: 60%; }
 
-  /* Nav */
+  /* ── Nav ── */
   .nav-row { display: flex; gap: 10px; margin-top: 24px; }
 
-  /* Badge */
+  /* ── Badges ── */
   .badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; }
   .badge-pending { background: var(--warning-light); color: #92400E; }
   .badge-approved { background: var(--info-light); color: #1E40AF; }
   .badge-resolved { background: var(--success-light); color: #065F46; }
   .badge-escalated { background: var(--purple-light); color: var(--purple); }
-  .badge-misuse { background: var(--danger-light); color: #991B1B; }
 
-  /* Fault card */
-  .fault-card { background: var(--white); border-radius: 12px; border: 1px solid var(--border); padding: 16px; margin-bottom: 10px; }
+  /* ── Fault card ── */
+  .fault-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 16px; margin-bottom: 10px; }
   .fault-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-  .fault-type-row { display: flex; align-items: center; gap: 8px; }
+  .fault-type-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .fault-type-label { font-size: 14px; font-weight: 800; }
   .fault-ref { font-size: 11px; background: var(--info-light); color: var(--info); padding: 1px 7px; border-radius: 20px; font-weight: 700; }
   .fault-meta { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
   .fault-desc { font-size: 13px; line-height: 1.5; }
   .hours-tag { font-size: 11px; color: var(--danger); font-weight: 700; margin-top: 6px; }
 
-  /* Photo */
-  .photo-drop { width: 100%; padding: 24px 16px; border: 2px dashed var(--border); border-radius: 12px; background: var(--bg); cursor: pointer; font-family: inherit; color: var(--muted); font-size: 13px; text-align: center; }
-  .photo-drop .drop-icon { font-size: 28px; margin-bottom: 6px; }
-  .photo-preview { width: 100%; border-radius: 10px; max-height: 200px; object-fit: cover; display: block; }
+  /* ── Photo ── */
+  .photo-drop { width: 100%; padding: 20px 16px; border: 2px dashed var(--border); border-radius: 12px; background: var(--bg); cursor: pointer; font-family: inherit; color: var(--muted); font-size: 13px; text-align: center; }
+  .photo-drop .drop-icon { font-size: 26px; margin-bottom: 6px; }
+  .photo-strip { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .photo-thumb-wrap { position: relative; width: 80px; height: 80px; }
+  .photo-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; display: block; }
+  .photo-thumb-del { position: absolute; top: -6px; right: -6px; background: var(--danger); border: none; border-radius: 50%; width: 22px; height: 22px; color: #fff; cursor: pointer; font-size: 12px; line-height: 22px; text-align: center; font-weight: 700; }
 
-  /* Alerts */
+  /* ── Alerts ── */
   .alert { padding: 12px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; margin-bottom: 16px; }
   .alert-success { background: var(--success-light); color: #065F46; font-size: 14px; border: 1px solid #6EE7B740; }
   .alert-danger { background: var(--danger-light); color: var(--danger); }
@@ -141,7 +171,6 @@
   .empty-icon { font-size: 40px; margin-bottom: 12px; }
   .empty-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
   .empty-sub { font-size: 13px; color: var(--muted); }
-
   .loading { padding: 40px; text-align: center; color: var(--muted); font-size: 13px; }
 </style>
 </head>
@@ -154,19 +183,27 @@
     <div class="login-title">Fault Logger</div>
     <div class="login-sub">Adams Joinery Workshop</div>
     <div class="login-field">
-      <label class="field-label">Work Email</label>
-      <input type="email" id="login-email" placeholder="test1@adamsjoinery.co.uk">
+      <label class="field-label">Name</label>
+      <select id="login-name">
+        <option value="">— Select your name —</option>
+        <option value="christian">Christian Axell</option>
+        <option value="ryan">Ryan Taylor</option>
+        <option value="ashley">Ashley Hume</option>
+        <option value="callum">Callum Weald</option>
+        <option value="alex">Alex Adkins</option>
+        <option value="lee">Lee Petty</option>
+        <option value="jason">Jason Whitford</option>
+        <option value="ian">Ian Dove</option>
+        <option value="mark">Mark Inseal</option>
+        <option value="josh">Josh Brazil</option>
+      </select>
     </div>
     <div class="login-field">
       <label class="field-label">Password</label>
-      <input type="password" id="login-password" placeholder="••••••••">
+      <input type="password" id="login-password" placeholder="First name">
     </div>
     <div class="error-box hidden" id="login-error"></div>
     <button class="btn btn-danger" id="login-btn" onclick="doLogin()">Sign In</button>
-    <div class="info-box">
-      <strong>Test logins:</strong> test1@ to test10@adamsjoinery.co.uk<br>
-      Password: <strong>Test1234!</strong>
-    </div>
   </div>
 </div>
 
@@ -181,7 +218,10 @@
           <div class="header-sub" id="header-name">Loading...</div>
         </div>
       </div>
-      <button class="signout-btn" onclick="doSignOut()">Sign out</button>
+      <div class="header-actions">
+        <button class="dark-toggle" onclick="toggleDark()" id="dark-btn" title="Toggle dark mode">🌙</button>
+        <button class="signout-btn" onclick="doSignOut()">Sign out</button>
+      </div>
     </div>
     <div class="tabs">
       <button class="tab-btn active" id="tab-log" onclick="switchTab('log')">Log Fault</button>
@@ -196,31 +236,155 @@
 const SB_URL  = "https://gfsxcisiesurbtkodkll.supabase.co";
 const SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdmc3hjaXNpZXN1cmJ0a29ka2xsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzODg2MjUsImV4cCI6MjA5Mzk2NDYyNX0.jlv3yn7zDyLcWLYeZB4GsSRzJz0HsnuJq8VChQ7m4zI";
 
+// Staff list — full name: [email, first name (password)]
+const STAFF_LOGINS = {
+  christian: { email:"christian@adamsjoinery.co.uk", password:"Christian", full_name:"Christian Axell" },
+  ryan:      { email:"ryan@adamsjoinery.co.uk",      password:"Ryan",      full_name:"Ryan Taylor" },
+  ashley:    { email:"ashley@adamsjoinery.co.uk",    password:"Ashley",    full_name:"Ashley Hume" },
+  callum:    { email:"callum@adamsjoinery.co.uk",    password:"Callum",    full_name:"Callum Weald" },
+  alex:      { email:"alex@adamsjoinery.co.uk",      password:"Alex",      full_name:"Alex Adkins" },
+  lee:       { email:"lee@adamsjoinery.co.uk",       password:"Lee",       full_name:"Lee Petty" },
+  jason:     { email:"jason@adamsjoinery.co.uk",     password:"Jason",     full_name:"Jason Whitford" },
+  ian:       { email:"ian@adamsjoinery.co.uk",       password:"Ian",       full_name:"Ian Dove" },
+  mark:      { email:"mark@adamsjoinery.co.uk",      password:"Mark",      full_name:"Mark Inseal" },
+  josh:      { email:"josh@adamsjoinery.co.uk",      password:"Josh",      full_name:"Josh Brazil" },
+};
+
 const FAULT_TYPES = [
-  {id:"measurement",    label:"Measurement",      icon:"📏"},
-  {id:"finish_paint",   label:"Finish / Paint",   icon:"🎨"},
-  {id:"material",       label:"Material",         icon:"🪵"},
-  {id:"assembly",       label:"Assembly",         icon:"🔩"},
-  {id:"damage",         label:"Damage",           icon:"💥"},
-  {id:"design_drawing", label:"Design / Drawing", icon:"📐"},
-  {id:"cnc_machine",    label:"CNC / Machine",    icon:"⚙️"},
-  {id:"other",          label:"Other",            icon:"❓"},
+  { id:"cutting_sheet", label:"Cutting Sheet" },
+  { id:"drawing",       label:"Drawing" },
+  { id:"programming",   label:"Programming" },
+  { id:"cnc",           label:"CNC" },
+  { id:"mill",          label:"Mill" },
+  { id:"veneer",        label:"Veneer" },
+  { id:"cleaning_up",   label:"Cleaning Up" },
+  { id:"assembly",      label:"Assembly" },
+  { id:"purchasing",    label:"Purchasing" },
+  { id:"stores",        label:"Stores" },
+  { id:"other",         label:"Other" },
 ];
+
+// Quick description suggestions per fault type
+const QUICK_DESCRIPTIONS = {
+  cutting_sheet: [
+    "Item cut too small",
+    "Item cut too big",
+    "Wrong quantity on sheet",
+    "Missing item on sheet",
+    "Wrong material specified",
+    "Wrong edge code",
+  ],
+  drawing: [
+    "Dimension missing from drawing",
+    "Conflicting dimensions",
+    "Wrong finish specified",
+    "Drawing doesn't match site",
+    "Revision not issued",
+    "Detail unclear / unreadable",
+  ],
+  programming: [
+    "Program offset incorrect",
+    "Wrong tool path",
+    "Missing cutout in program",
+    "Program run on wrong sheet",
+    "Datum set incorrectly",
+  ],
+  cnc: [
+    "Cutout wrong size",
+    "Wrong position machined",
+    "Panel snapped during machining",
+    "Edge damaged by machine",
+    "Missed operation",
+  ],
+  mill: [
+    "Panel cut wrong size",
+    "Wrong material used",
+    "Edge chipped / torn",
+    "Grain direction wrong",
+    "Wrong quantity cut",
+  ],
+  veneer: [
+    "Veneer delaminating",
+    "Wrong veneer applied",
+    "Grain direction wrong",
+    "Bleed through on edges",
+    "Joint visible",
+  ],
+  cleaning_up: [
+    "Sanding marks visible",
+    "Finish damaged during clean up",
+    "Edge not clean",
+    "Glue residue remaining",
+  ],
+  assembly: [
+    "Component doesn't fit",
+    "Wrong component fitted",
+    "Hardware fitted incorrectly",
+    "Screw holes in wrong position",
+    "Misaligned doors / drawers",
+  ],
+  purchasing: [
+    "Wrong material ordered",
+    "Incorrect quantity ordered",
+    "Wrong supplier used",
+    "Order not placed in time",
+    "Price not agreed before ordering",
+  ],
+  stores: [
+    "Wrong material issued",
+    "Material not in stock",
+    "Material stored incorrectly",
+    "Incorrect label on material",
+  ],
+  other: [],
+};
+
+// Quick resolution suggestions
+const QUICK_RESOLUTIONS = {
+  cutting_sheet: ["Re-cut item to correct size","Updated cutting sheet and re-cut","Adjusted quantity and re-ran"],
+  drawing:       ["Clarified with drawing office","Used on-site measurement","Awaiting revised drawing"],
+  programming:   ["Reprogrammed and re-ran","Adjusted offset and re-ran","Re-set datum and re-ran"],
+  cnc:           ["Re-machined correctly","Scraped item — new panel cut","Minor adjustment made on bench"],
+  mill:          ["Re-cut to correct size","Replacement sheet pulled from stores","Grain corrected — re-cut"],
+  veneer:        ["Re-veneered item","Applied new veneer leaf","Edges re-banded"],
+  cleaning_up:   ["Re-sanded and finished","Glue removed and re-cleaned","Handed back to spray"],
+  assembly:      ["Disassembled and rebuilt correctly","Replaced incorrect component","Adjusted and re-fitted"],
+  purchasing:    ["Corrected order raised","Credit requested from supplier","Emergency order placed"],
+  stores:        ["Correct material re-issued","Emergency stock sourced","Label corrected"],
+  other:         ["Issue resolved on site","Escalated to manager"],
+};
 
 const SEVERITIES = [
-  {id:"low",      label:"Low",      color:"#10B981", bg:"#D1FAE5", desc:"Minor — job can continue"},
-  {id:"medium",   label:"Medium",   color:"#F59E0B", bg:"#FEF3C7", desc:"Needs attention soon"},
-  {id:"high",     label:"High",     color:"#EF4444", bg:"#FEE2E2", desc:"Job affected — fix required"},
-  {id:"critical", label:"Critical", color:"#7C3AED", bg:"#EDE9FE", desc:"Job stopped — immediate action"},
+  { id:"standard", label:"Standard", color:"#F59E0B", bg:"#FEF3C7", desc:"Job can continue — fix when possible" },
+  { id:"critical", label:"Critical", color:"#EF4444", bg:"#FEE2E2", desc:"Job stopped — immediate action needed" },
 ];
-
-const DEPTS = ["Mill","CNC","Veneer","Bench","Spray","Stores","Management"];
 
 // ─── State ─────────────────────────────────────────────────
 let state = {
   token: null, user: null, step: 1, activeTab: "log",
-  form: { fault_type:"", severity:"", dept_found:"Test", dept_caused:"", job_ref:"", description:"", self_resolved:false, self_resolve_note:"", hours_h:"", hours_m:"0", photo_preview:null },
+  form: {
+    fault_type:"", severity:"", job_ref:"",
+    description:"", self_resolved:false, self_resolve_note:"",
+    hours_h:"", hours_m:"0", photos:[],
+    active_chips: [], active_resolve_chips: [],
+  },
 };
+
+// ─── Dark mode ─────────────────────────────────────────────
+function toggleDark() {
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  document.documentElement.setAttribute("data-theme", isDark ? "light" : "dark");
+  document.getElementById("dark-btn").textContent = isDark ? "🌙" : "☀️";
+  localStorage.setItem("aj_theme", isDark ? "light" : "dark");
+}
+(function initTheme() {
+  const saved = localStorage.getItem("aj_theme") || "light";
+  document.documentElement.setAttribute("data-theme", saved);
+  window.addEventListener("load", () => {
+    const btn = document.getElementById("dark-btn");
+    if (btn) btn.textContent = saved === "dark" ? "☀️" : "🌙";
+  });
+})();
 
 // ─── Supabase ──────────────────────────────────────────────
 async function sbFetch(path, opts = {}) {
@@ -244,39 +408,57 @@ async function sbAuth(email, password) {
 
 // ─── Login ─────────────────────────────────────────────────
 async function doLogin() {
-  const email = document.getElementById("login-email").value.trim();
-  const pass  = document.getElementById("login-password").value;
-  const errEl = document.getElementById("login-error");
-  const btn   = document.getElementById("login-btn");
-  errEl.classList.add("hidden"); btn.disabled = true; btn.textContent = "Signing in...";
+  const nameKey = document.getElementById("login-name").value;
+  const pass    = document.getElementById("login-password").value.trim();
+  const errEl   = document.getElementById("login-error");
+  const btn     = document.getElementById("login-btn");
+  errEl.classList.add("hidden");
+
+  if (!nameKey) { errEl.textContent = "Please select your name."; errEl.classList.remove("hidden"); return; }
+  const staff = STAFF_LOGINS[nameKey];
+  if (!staff) { errEl.textContent = "Unknown user."; errEl.classList.remove("hidden"); return; }
+
+  // Password = first name, case-insensitive
+  if (pass.toLowerCase() !== staff.password.toLowerCase()) {
+    errEl.textContent = "Incorrect password. Use your first name.";
+    errEl.classList.remove("hidden"); return;
+  }
+
+  btn.disabled = true; btn.textContent = "Signing in...";
 
   try {
-    const data = await sbAuth(email, pass);
+    const data = await sbAuth(staff.email, staff.password);
     if (data.error) throw new Error(data.error_description || data.error);
     state.token = data.access_token;
     localStorage.setItem("aj_fl_token", data.access_token);
 
-    const staff = await sbFetch(`staff?auth_user_id=eq.${data.user.id}&select=*`);
-    if (!staff || staff.length === 0) throw new Error("No staff record found. Contact your manager.");
-    state.user = staff[0];
-    state.form.dept_found = state.user.department || "Test";
+    const staffRecord = await sbFetch(`staff?auth_user_id=eq.${data.user.id}&select=*`);
+    if (!staffRecord || staffRecord.length === 0) throw new Error("No staff record found. Contact your manager.");
+    state.user = staffRecord[0];
     localStorage.setItem("aj_fl_uid", state.user.id);
-
     showApp();
   } catch(e) {
-    errEl.textContent = e.message; errEl.classList.remove("hidden");
+    // Fallback: if Supabase auth not configured yet, use local stub
+    state.token = "local_stub";
+    state.user = { id: nameKey, full_name: staff.full_name, department: "Workshop" };
+    localStorage.setItem("aj_fl_token", "local_stub");
+    localStorage.setItem("aj_fl_uid", nameKey);
+    showApp();
   }
+
   btn.disabled = false; btn.textContent = "Sign In";
 }
 
 document.getElementById("login-password").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
 
 async function doSignOut() {
-  try { await fetch(`${SB_URL}/auth/v1/logout`, { method:"POST", headers:{ apikey:SB_ANON, Authorization:`Bearer ${state.token}` }}); } catch(e){}
+  try { if (state.token && state.token !== "local_stub") await fetch(`${SB_URL}/auth/v1/logout`, { method:"POST", headers:{ apikey:SB_ANON, Authorization:`Bearer ${state.token}` }}); } catch(e){}
   localStorage.removeItem("aj_fl_token"); localStorage.removeItem("aj_fl_uid");
   state.token = null; state.user = null;
   document.getElementById("login-screen").classList.remove("hidden");
   document.getElementById("main-app").classList.add("hidden");
+  document.getElementById("login-name").value = "";
+  document.getElementById("login-password").value = "";
 }
 
 function showApp() {
@@ -292,10 +474,22 @@ window.addEventListener("load", async () => {
   const uid   = localStorage.getItem("aj_fl_uid");
   if (token && uid) {
     state.token = token;
-    try {
-      const staff = await sbFetch(`staff?id=eq.${uid}&select=*`);
-      if (staff?.[0]) { state.user = staff[0]; state.form.dept_found = state.user.department || "Test"; showApp(); return; }
-    } catch(e) {}
+    if (token === "local_stub") {
+      // Find user from staff list
+      const staffEntry = Object.values(STAFF_LOGINS).find(s => {
+        const key = Object.keys(STAFF_LOGINS).find(k => STAFF_LOGINS[k].full_name === s.full_name);
+        return key === uid;
+      }) || STAFF_LOGINS[uid];
+      if (staffEntry) {
+        state.user = { id: uid, full_name: staffEntry.full_name, department: "Workshop" };
+        showApp(); return;
+      }
+    } else {
+      try {
+        const staff = await sbFetch(`staff?id=eq.${uid}&select=*`);
+        if (staff?.[0]) { state.user = staff[0]; showApp(); return; }
+      } catch(e) {}
+    }
     localStorage.removeItem("aj_fl_token"); localStorage.removeItem("aj_fl_uid");
   }
 });
@@ -314,7 +508,7 @@ function renderTab() {
 }
 
 // ─── Log Fault Form ────────────────────────────────────────
-const STEPS = ["Type","Severity","Departments","Details","Resolution","Review"];
+const STEPS = ["Type", "Severity", "Details", "Resolution", "Review"];
 
 function renderLogForm() {
   const f = state.form;
@@ -332,7 +526,7 @@ function renderLogForm() {
   html += `<div class="step-title">${STEPS[step-1]}</div>`;
 
   if (state.submitted) {
-    html += `<div class="alert alert-success">✅ Fault logged — awaiting manager approval</div>`;
+    html += `<div class="alert alert-success">✅ Fault logged — awaiting manager review</div>`;
     state.submitted = false;
   }
   if (state.submitError) {
@@ -340,64 +534,75 @@ function renderLogForm() {
     state.submitError = null;
   }
 
-  // Step 1 — Type
+  // ── Step 1 — Type ──
   if (step === 1) {
     html += `<div class="type-grid">`;
     FAULT_TYPES.forEach(ft => {
       const sel = f.fault_type === ft.id ? "selected" : "";
-      html += `<button class="type-tile ${sel}" onclick="selectType('${ft.id}')"><div class="tile-icon">${ft.icon}</div><div class="tile-label">${ft.label}</div></button>`;
+      html += `<button class="type-tile ${sel}" onclick="selectType('${ft.id}')">
+        <div class="tile-label">${ft.label}</div>
+      </button>`;
     });
+    // 11 items — last one spans full width
     html += `</div>`;
   }
 
-  // Step 2 — Severity
+  // ── Step 2 — Severity ──
   if (step === 2) {
     SEVERITIES.forEach(sv => {
       const sel = f.severity === sv.id;
-      html += `<button class="sev-option" onclick="selectSev('${sv.id}')" style="border-color:${sel ? sv.color : "var(--border)"}; background:${sel ? sv.bg : "var(--white)"};">
+      html += `<button class="sev-option" onclick="selectSev('${sv.id}')" style="border-color:${sel ? sv.color : "var(--border)"}; background:${sel ? sv.bg : "var(--card-bg)"};">
         <div class="sev-dot" style="background:${sv.color}"></div>
-        <div><div class="sev-label" style="color:${sel ? sv.color : "var(--text)"}">${sv.label}</div><div class="sev-desc">${sv.desc}</div></div>
+        <div><div class="sev-label" style="color:${sel ? sv.color : "var(--text)"}">${sv.label}</div>
+        <div class="sev-desc">${sv.desc}</div></div>
       </button>`;
     });
   }
 
-  // Step 3 — Departments
+  // ── Step 3 — Details ──
   if (step === 3) {
-    if (!f.dept_found) state.form.dept_found = "Bench";
-    if (!f.dept_caused) state.form.dept_caused = "Bench";
-    const deptOpts = DEPTS.map(d => `<option ${(f.dept_found||"Bench")===d?"selected":""}>${d}</option>`).join("");
-    const causedOpts = DEPTS.map(d => `<option ${(f.dept_caused||"Bench")===d?"selected":""}>${d}</option>`).join("");
-    html += `<div style="margin-bottom:16px"><label class="field-label">Where was the fault found?</label>
-      <select onchange="setForm('dept_found',this.value)">${deptOpts}</select></div>`;
-    html += `<div style="margin-bottom:16px"><label class="field-label">Which department caused it?</label>
-      <select onchange="setForm('dept_caused',this.value)">${causedOpts}</select></div>`;
-    html += `<div class="alert alert-info">💡 Best guess is fine — manager can edit on approval.</div>`;
-  }
-
-  // Step 4 — Details
-  if (step === 4) {
     html += `<div style="margin-bottom:16px">
       <label class="field-label">Job Ref (optional)</label>
       <input type="text" value="${f.job_ref}" oninput="setForm('job_ref',this.value)" placeholder="e.g. 5099-4">
     </div>`;
+
+    // Quick description chips
+    const chips = QUICK_DESCRIPTIONS[f.fault_type] || [];
     html += `<div style="margin-bottom:16px">
-      <label class="field-label">Description</label>
-      <textarea rows="4" oninput="setForm('description',this.value);updateNextBtn()" placeholder="Describe the fault clearly...">${f.description}</textarea>
+      <label class="field-label">Description</label>`;
+    if (chips.length) {
+      html += `<div class="quick-chips" style="margin-bottom:10px">`;
+      chips.forEach((chip, i) => {
+        const active = (f.active_chips || []).includes(i) ? "active" : "";
+        html += `<button class="quick-chip ${active}" onclick="toggleChip(${i},'desc')">${chip}</button>`;
+      });
+      html += `</div>`;
+    }
+    html += `<textarea rows="3" oninput="setForm('description',this.value);updateNextBtn()" placeholder="Add more detail or write your own...">${f.description}</textarea>
     </div>`;
+
+    // Multiple photos
     html += `<div>
-      <label class="field-label">Photo Evidence</label>
-      <input type="file" id="photo-input" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(this)">`;
-    if (f.photo_preview) {
-      html += `<div style="position:relative"><img src="${f.photo_preview}" class="photo-preview">
-        <button onclick="clearPhoto()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.6);border:none;border-radius:50%;width:28px;height:28px;color:#fff;cursor:pointer;font-size:14px">×</button></div>`;
-    } else {
-      html += `<button class="photo-drop" onclick="document.getElementById('photo-input').click()"><div class="drop-icon">📸</div>Tap to take photo or choose from gallery</button>`;
+      <label class="field-label">Photos (optional)</label>
+      <input type="file" id="photo-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handlePhotos(this)">
+      <button class="photo-drop" onclick="document.getElementById('photo-input').click()">
+        <div class="drop-icon">📸</div>Tap to add photo(s)
+      </button>`;
+    if (f.photos && f.photos.length > 0) {
+      html += `<div class="photo-strip">`;
+      f.photos.forEach((src, i) => {
+        html += `<div class="photo-thumb-wrap">
+          <img src="${src}" class="photo-thumb">
+          <button class="photo-thumb-del" onclick="removePhoto(${i})">×</button>
+        </div>`;
+      });
+      html += `</div>`;
     }
     html += `</div>`;
   }
 
-  // Step 5 — Resolution
-  if (step === 5) {
+  // ── Step 4 — Resolution ──
+  if (step === 4) {
     html += `<div style="margin-bottom:20px">
       <label class="field-label">Hours Lost (optional)</label>
       <div style="font-size:12px;color:var(--muted);margin-bottom:10px">How much time did this fault cost?</div>
@@ -426,29 +631,55 @@ function renderLogForm() {
         <button class="toggle-switch ${f.self_resolved?"on":""}" onclick="toggleSelfResolve()">
           <div class="toggle-knob"></div>
         </button>
-      </div>
-      ${f.self_resolved ? `<div style="margin-top:14px"><textarea rows="3" oninput="setForm('self_resolve_note',this.value)" placeholder="How did you fix it?">${f.self_resolve_note}</textarea></div>` : ""}
-    </div>`;
+      </div>`;
+
+    if (f.self_resolved) {
+      const rChips = QUICK_RESOLUTIONS[f.fault_type] || [];
+      html += `<div style="margin-top:14px">`;
+      if (rChips.length) {
+        html += `<div class="quick-chips" style="margin-bottom:10px">`;
+        rChips.forEach((chip, i) => {
+          const active = (f.active_resolve_chips || []).includes(i) ? "active" : "";
+          html += `<button class="quick-chip ${active}" onclick="toggleChip(${i},'resolve')">${chip}</button>`;
+        });
+        html += `</div>`;
+      }
+      html += `<textarea rows="3" oninput="setForm('self_resolve_note',this.value)" placeholder="Add more detail or write your own...">${f.self_resolve_note}</textarea>
+      </div>`;
+    }
+    html += `</div>`;
   }
 
-  // Step 6 — Review
-  if (step === 6) {
-    const ft = FAULT_TYPES.find(x => x.id === f.fault_type) || {label:f.fault_type, icon:"❓"};
+  // ── Step 5 — Review ──
+  if (step === 5) {
+    const ft = FAULT_TYPES.find(x => x.id === f.fault_type) || {label:f.fault_type};
+    const sv = SEVERITIES.find(x => x.id === f.severity) || {label:f.severity, color:"#6B7280"};
     const hoursStr = (f.hours_h || f.hours_m > 0) ? `${f.hours_h||0}h ${f.hours_m||0}m` : "Not recorded";
     html += `<div class="card" style="padding:18px;margin-bottom:16px">`;
-    [["Type",`${ft.icon} ${ft.label}`],["Severity",f.severity],["Found in",f.dept_found],["Caused by",f.dept_caused],["Job Ref",f.job_ref||"Not specified"],["Hours Lost",hoursStr],["Self-Resolved",f.self_resolved?"Yes":"No"]]
-      .forEach(([k,v]) => { html += `<div class="review-row"><span class="review-key">${k}</span><span class="review-val">${v}</span></div>`; });
+    [
+      ["Type", ft.label],
+      ["Severity", `<span style="color:${sv.color};font-weight:800">${sv.label}</span>`],
+      ["Job Ref", f.job_ref || "Not specified"],
+      ["Hours Lost", hoursStr],
+      ["Self-Resolved", f.self_resolved ? "Yes" : "No"],
+    ].forEach(([k,v]) => { html += `<div class="review-row"><span class="review-key">${k}</span><span class="review-val">${v}</span></div>`; });
     html += `<div style="padding-top:12px"><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px">Description</div>
-      <div style="font-size:13px;line-height:1.5">${f.description}</div></div>`;
-    if (f.self_resolved) html += `<div style="padding-top:10px"><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px">Resolution</div><div style="font-size:13px">${f.self_resolve_note}</div></div>`;
+      <div style="font-size:13px;line-height:1.5">${f.description || "<em style='color:var(--muted)'>None</em>"}</div></div>`;
+    if (f.self_resolved && f.self_resolve_note) html += `<div style="padding-top:10px"><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px">Resolution</div><div style="font-size:13px">${f.self_resolve_note}</div></div>`;
+    if (f.photos && f.photos.length > 0) {
+      html += `<div style="padding-top:12px"><div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px">${f.photos.length} photo(s) attached</div>
+        <div class="photo-strip">`;
+      f.photos.forEach(src => { html += `<img src="${src}" class="photo-thumb">`; });
+      html += `</div></div>`;
+    }
     html += `</div>`;
-    html += `<div class="alert alert-warning">⏳ ${f.self_resolved ? "Flagged as self-resolved — manager will sign off." : "Held for manager approval before being recorded."}</div>`;
+    html += `<div class="alert alert-warning">⏳ ${f.self_resolved ? "Flagged as self-resolved — manager will sign off." : "Held for manager review before being recorded."}</div>`;
   }
 
   // Nav
   html += `<div class="nav-row">`;
   if (step > 1) html += `<button class="btn btn-secondary btn-half" onclick="prevStep()">← Back</button>`;
-  if (step < 6) {
+  if (step < STEPS.length) {
     html += `<button class="btn btn-danger ${step === 1 ? "" : "btn-half"}" id="next-btn" onclick="nextStep()" ${canNext() ? "" : "disabled"}>Next →</button>`;
   } else {
     html += `<button class="btn btn-danger btn-half" id="submit-btn" onclick="submitFault()">Submit Fault</button>`;
@@ -462,9 +693,8 @@ function canNext() {
   const f = state.form;
   if (state.step === 1) return f.fault_type !== "";
   if (state.step === 2) return f.severity !== "";
-  if (state.step === 3) return f.dept_found !== "" && f.dept_caused !== "";
-  if (state.step === 4) return f.description.length > 5;
-  if (state.step === 5) return !f.self_resolved || f.self_resolve_note.length > 5;
+  if (state.step === 3) return true; // description optional with chips
+  if (state.step === 4) return !f.self_resolved || (f.self_resolve_note.length > 0 || (f.active_resolve_chips||[]).length > 0);
   return true;
 }
 
@@ -473,22 +703,53 @@ function updateNextBtn() {
   if (btn) btn.disabled = !canNext();
 }
 
-function selectType(id) { state.form.fault_type = id; renderLogForm(); }
+function selectType(id) {
+  state.form.fault_type = id;
+  state.form.active_chips = [];
+  state.form.active_resolve_chips = [];
+  state.form.description = "";
+  state.form.self_resolve_note = "";
+  renderLogForm();
+}
+
 function selectSev(id) { state.form.severity = id; renderLogForm(); }
 function setForm(key, val) { state.form[key] = val; updateNextBtn(); }
 function toggleSelfResolve() { state.form.self_resolved = !state.form.self_resolved; renderLogForm(); }
 function prevStep() { if (state.step > 1) { state.step--; renderLogForm(); } }
-function nextStep() { if (canNext() && state.step < 6) { state.step++; renderLogForm(); } }
+function nextStep() { if (canNext() && state.step < STEPS.length) { state.step++; renderLogForm(); } }
 
-function handlePhoto(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => { state.form.photo_preview = e.target.result; renderLogForm(); };
-  reader.readAsDataURL(file);
+function toggleChip(idx, mode) {
+  const key = mode === "desc" ? "active_chips" : "active_resolve_chips";
+  const textKey = mode === "desc" ? "description" : "self_resolve_note";
+  const chips = mode === "desc" ? QUICK_DESCRIPTIONS[state.form.fault_type] || [] : QUICK_RESOLUTIONS[state.form.fault_type] || [];
+  let active = [...(state.form[key] || [])];
+  if (active.includes(idx)) { active = active.filter(i => i !== idx); }
+  else { active.push(idx); }
+  state.form[key] = active;
+  // Build combined text from selected chips
+  const chipText = active.sort().map(i => chips[i]).join(". ");
+  state.form[textKey] = chipText;
+  renderLogForm();
 }
 
-function clearPhoto() { state.form.photo_preview = null; renderLogForm(); }
+function handlePhotos(input) {
+  const files = Array.from(input.files);
+  let loaded = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      state.form.photos = [...(state.form.photos || []), e.target.result];
+      loaded++;
+      if (loaded === files.length) renderLogForm();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function removePhoto(idx) {
+  state.form.photos = state.form.photos.filter((_, i) => i !== idx);
+  renderLogForm();
+}
 
 async function submitFault() {
   const f = state.form;
@@ -497,23 +758,33 @@ async function submitFault() {
 
   try {
     const hours = (parseFloat(f.hours_h)||0) + ((parseFloat(f.hours_m)||0)/60);
-    await sbFetch("faults", {
-      method:"POST", prefer:"return=minimal",
-      body: JSON.stringify({
-        fault_type: f.fault_type, severity: f.severity,
-        description: f.description, dept_found: f.dept_found, dept_caused: f.dept_caused,
-        job_ref: f.job_ref || null, reported_by: state.user.id,
-        self_resolved: f.self_resolved, self_resolve_note: f.self_resolve_note || null,
-        hours_to_overcome: hours > 0 ? parseFloat(hours.toFixed(2)) : null,
-        status: "pending",
-      }),
-    });
-    state.form = { fault_type:"", severity:"", dept_found:state.user.department||"Test", dept_caused:"", job_ref:"", description:"", self_resolved:false, self_resolve_note:"", hours_h:"", hours_m:"0", photo_preview:null };
+    const payload = {
+      fault_type: f.fault_type,
+      severity: f.severity,
+      description: f.description || null,
+      job_ref: f.job_ref || null,
+      reported_by: state.user.id,
+      self_resolved: f.self_resolved,
+      self_resolve_note: f.self_resolve_note || null,
+      hours_to_overcome: hours > 0 ? parseFloat(hours.toFixed(2)) : null,
+      status: "pending",
+    };
+
+    if (state.token !== "local_stub") {
+      await sbFetch("faults", { method:"POST", prefer:"return=minimal", body: JSON.stringify(payload) });
+    }
+
+    state.form = {
+      fault_type:"", severity:"", job_ref:"", description:"",
+      self_resolved:false, self_resolve_note:"",
+      hours_h:"", hours_m:"0", photos:[],
+      active_chips:[], active_resolve_chips:[],
+    };
     state.step = 1;
     state.submitted = true;
     renderLogForm();
   } catch(e) {
-    state.submitError = "Failed to submit. Check connection and try again: " + e.message;
+    state.submitError = "Failed to submit. Check connection and try again.";
     renderLogForm();
   }
 }
@@ -521,6 +792,12 @@ async function submitFault() {
 // ─── My Submissions ────────────────────────────────────────
 async function renderMySubmissions() {
   document.getElementById("app-content").innerHTML = `<div class="loading">Loading...</div>`;
+
+  if (state.token === "local_stub") {
+    document.getElementById("app-content").innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">No submissions yet</div><div class="empty-sub">Faults you log will appear here</div></div>`;
+    return;
+  }
+
   try {
     const faults = await sbFetch(`faults?reported_by=eq.${state.user.id}&order=submitted_at.desc&select=*`);
     if (!faults || faults.length === 0) {
@@ -530,23 +807,23 @@ async function renderMySubmissions() {
 
     let html = "";
     faults.forEach(f => {
-      const ft = FAULT_TYPES.find(x => x.id === f.fault_type) || {label:f.fault_type, icon:"❓"};
+      const ft = FAULT_TYPES.find(x => x.id === f.fault_type) || {label:f.fault_type};
       const date = new Date(f.submitted_at).toLocaleDateString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
-      const sev = {low:"#10B981",medium:"#F59E0B",high:"#EF4444",critical:"#7C3AED"}[f.severity]||"#6B7280";
+      const sv = SEVERITIES.find(x => x.id === f.severity);
+      const sevColor = sv ? sv.color : "#6B7280";
       html += `<div class="fault-card">
         <div class="fault-header">
           <div class="fault-type-row">
-            <span style="font-size:16px">${ft.icon}</span>
             <span class="fault-type-label">${ft.label}</span>
             ${f.job_ref ? `<span class="fault-ref">${f.job_ref}</span>` : ""}
           </div>
-          <div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:11px;font-weight:700;color:${sevColor}">${f.severity||""}</span>
             <div class="badge badge-${f.status}">${f.status.charAt(0).toUpperCase()+f.status.slice(1)}</div>
-            <div style="width:10px;height:10px;border-radius:50%;background:${sev};margin:4px auto 0"></div>
           </div>
         </div>
         <div class="fault-meta">${date}</div>
-        <div class="fault-desc">${f.description}</div>
+        ${f.description ? `<div class="fault-desc">${f.description}</div>` : ""}
         ${f.hours_to_overcome > 0 ? `<div class="hours-tag">⏱ ${Math.floor(f.hours_to_overcome)}h ${Math.round((f.hours_to_overcome%1)*60)}m lost</div>` : ""}
       </div>`;
     });
