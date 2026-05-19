@@ -472,9 +472,7 @@ async function submitFeedback() {
       self_resolved: false,
       status: "pending",
     };
-    if (state.token !== "local_stub") {
-      await sbFetch("faults", { method:"POST", prefer:"return=minimal", body: JSON.stringify(payload) });
-    }
+    await sbFetch("faults", { method:"POST", prefer:"return=minimal", body: JSON.stringify(payload) });
     document.getElementById("fb-body").innerHTML = `<div class="fb-success">✅ Thanks! Your feedback has been sent to the manager.</div>
       <button class="btn btn-secondary" style="margin-top:16px" onclick="closeFeedback()">Close</button>`;
   } catch(e) {
@@ -529,11 +527,10 @@ async function doLogin() {
   errEl.classList.add("hidden");
 
   if (!nameKey) { errEl.textContent = "Please select your name."; errEl.classList.remove("hidden"); return; }
-  const staff = STAFF_LOGINS[nameKey];
-  if (!staff) { errEl.textContent = "Unknown user."; errEl.classList.remove("hidden"); return; }
+  const staffLogin = STAFF_LOGINS[nameKey];
+  if (!staffLogin) { errEl.textContent = "Unknown user."; errEl.classList.remove("hidden"); return; }
 
-  // Password = first name, case-insensitive
-  if (pass.toLowerCase() !== staff.password.toLowerCase()) {
+  if (pass.toLowerCase() !== staffLogin.password.toLowerCase()) {
     errEl.textContent = "Incorrect password. Use your first name.";
     errEl.classList.remove("hidden"); return;
   }
@@ -541,23 +538,18 @@ async function doLogin() {
   btn.disabled = true; btn.textContent = "Signing in...";
 
   try {
-    const data = await sbAuth(staff.email, staff.password);
-    if (data.error) throw new Error(data.error_description || data.error);
-    state.token = data.access_token;
-    localStorage.setItem("aj_fl_token", data.access_token);
-
-    const staffRecord = await sbFetch(`staff?auth_user_id=eq.${data.user.id}&select=*`);
+    // Bypass Supabase auth — look up staff directly by full_name using anon key
+    state.token = SB_ANON;
+    const staffRecord = await sbFetch(`staff?full_name=eq.${encodeURIComponent(staffLogin.full_name)}&select=*`);
     if (!staffRecord || staffRecord.length === 0) throw new Error("No staff record found. Contact your manager.");
     state.user = staffRecord[0];
     localStorage.setItem("aj_fl_uid", state.user.id);
+    localStorage.setItem("aj_fl_name", staffLogin.full_name);
     showApp();
   } catch(e) {
-    // Fallback: if Supabase auth not configured yet, use local stub
-    state.token = "local_stub";
-    state.user = { id: nameKey, full_name: staff.full_name, department: "Workshop" };
-    localStorage.setItem("aj_fl_token", "local_stub");
-    localStorage.setItem("aj_fl_uid", nameKey);
-    showApp();
+    errEl.textContent = "Login failed: " + e.message;
+    errEl.classList.remove("hidden");
+    state.token = null;
   }
 
   btn.disabled = false; btn.textContent = "Sign In";
@@ -566,8 +558,8 @@ async function doLogin() {
 document.getElementById("login-password").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
 
 async function doSignOut() {
-  try { if (state.token && state.token !== "local_stub") await fetch(`${SB_URL}/auth/v1/logout`, { method:"POST", headers:{ apikey:SB_ANON, Authorization:`Bearer ${state.token}` }}); } catch(e){}
-  localStorage.removeItem("aj_fl_token"); localStorage.removeItem("aj_fl_uid");
+  localStorage.removeItem("aj_fl_uid");
+  localStorage.removeItem("aj_fl_name");
   state.token = null; state.user = null;
   document.getElementById("login-screen").classList.remove("hidden");
   document.getElementById("main-app").classList.add("hidden");
@@ -584,27 +576,15 @@ function showApp() {
 
 // ─── Session restore ───────────────────────────────────────
 window.addEventListener("load", async () => {
-  const token = localStorage.getItem("aj_fl_token");
-  const uid   = localStorage.getItem("aj_fl_uid");
-  if (token && uid) {
-    state.token = token;
-    if (token === "local_stub") {
-      // Find user from staff list
-      const staffEntry = Object.values(STAFF_LOGINS).find(s => {
-        const key = Object.keys(STAFF_LOGINS).find(k => STAFF_LOGINS[k].full_name === s.full_name);
-        return key === uid;
-      }) || STAFF_LOGINS[uid];
-      if (staffEntry) {
-        state.user = { id: uid, full_name: staffEntry.full_name, department: "Workshop" };
-        showApp(); return;
-      }
-    } else {
-      try {
-        const staff = await sbFetch(`staff?id=eq.${uid}&select=*`);
-        if (staff?.[0]) { state.user = staff[0]; showApp(); return; }
-      } catch(e) {}
-    }
-    localStorage.removeItem("aj_fl_token"); localStorage.removeItem("aj_fl_uid");
+  const uid = localStorage.getItem("aj_fl_uid");
+  if (uid) {
+    try {
+      state.token = SB_ANON;
+      const staff = await sbFetch(`staff?id=eq.${uid}&select=*`);
+      if (staff?.[0]) { state.user = staff[0]; showApp(); return; }
+    } catch(e) {}
+    localStorage.removeItem("aj_fl_uid");
+    localStorage.removeItem("aj_fl_name");
   }
 });
 
@@ -884,9 +864,7 @@ async function submitFault() {
       status: "pending",
     };
 
-    if (state.token !== "local_stub") {
-      await sbFetch("faults", { method:"POST", prefer:"return=minimal", body: JSON.stringify(payload) });
-    }
+    await sbFetch("faults", { method:"POST", prefer:"return=minimal", body: JSON.stringify(payload) });
 
     state.form = {
       fault_type:"", severity:"", job_ref:"", description:"",
@@ -906,11 +884,6 @@ async function submitFault() {
 // ─── My Submissions ────────────────────────────────────────
 async function renderMySubmissions() {
   document.getElementById("app-content").innerHTML = `<div class="loading">Loading...</div>`;
-
-  if (state.token === "local_stub") {
-    document.getElementById("app-content").innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">No submissions yet</div><div class="empty-sub">Faults you log will appear here</div></div>`;
-    return;
-  }
 
   try {
     const faults = await sbFetch(`faults?reported_by=eq.${state.user.id}&order=submitted_at.desc&select=*`);
