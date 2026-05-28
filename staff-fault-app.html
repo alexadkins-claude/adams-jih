@@ -300,12 +300,17 @@ const FAULT_TYPES = [
 // Quick description suggestions per fault type
 const QUICK_DESCRIPTIONS = {
   cutting_sheet: [
-    "Item cut too small",
-    "Item cut too big",
+    "Item cutting sheeted too small",
+    "Item cutting sheeted too big",
+    "Not enough requested",
     "Wrong quantity on sheet",
     "Missing item on sheet",
-    "Wrong material specified",
-    "Wrong edge code",
+    "Edgebanding incorrect",
+    "Wrong thickness specified",
+    "Sheet not on cutting sheet",
+    "Grain direction wrong",
+    "Wrong finish specified",
+    "Duplicate item on sheet",
   ],
   drawing: [
     "Dimension missing from drawing",
@@ -396,7 +401,7 @@ const SEVERITIES = [
 let state = {
   token: null, user: null, step: 1, activeTab: "log",
   form: {
-    fault_type:"", severity:"", job_ref:"",
+    fault_type:"", severity:"", job_ref:"", item_no:"",
     description:"", self_resolved:false, self_resolve_note:"",
     hours_h:"", hours_m:"0", photos:[],
     active_chips: [], active_resolve_chips: [],
@@ -660,6 +665,11 @@ function renderLogForm() {
       <input type="text" value="${f.job_ref}" oninput="setForm('job_ref',this.value)" placeholder="e.g. 5099-4">
     </div>`;
 
+    html += `<div style="margin-bottom:16px">
+      <label class="field-label">Item No. (optional)</label>
+      <input type="text" value="${f.item_no||''}" oninput="setForm('item_no',this.value)" placeholder="e.g. 3, A4, Item 7">
+    </div>`;
+
     // Quick description chips
     const chips = QUICK_DESCRIPTIONS[f.fault_type] || [];
     html += `<div style="margin-bottom:16px">
@@ -754,6 +764,7 @@ function renderLogForm() {
       ["Type", ft.label],
       ["Severity", `<span style="color:${sv.color};font-weight:800">${sv.label}</span>`],
       ["Job Ref", f.job_ref || "Not specified"],
+      ["Item No.", f.item_no || "Not specified"],
       ["Hours Lost", hoursStr],
       ["Self-Resolved", f.self_resolved ? "Yes" : "No"],
     ].forEach(([k,v]) => { html += `<div class="review-row"><span class="review-key">${k}</span><span class="review-val">${v}</span></div>`; });
@@ -857,6 +868,7 @@ async function submitFault() {
       severity: f.severity,
       description: f.description || null,
       job_ref: f.job_ref || null,
+      item_no: f.item_no || null,
       reported_by: state.user.id,
       self_resolved: f.self_resolved,
       self_resolve_note: f.self_resolve_note || null,
@@ -867,7 +879,7 @@ async function submitFault() {
     await sbFetch("faults", { method:"POST", prefer:"return=minimal", body: JSON.stringify(payload) });
 
     state.form = {
-      fault_type:"", severity:"", job_ref:"", description:"",
+      fault_type:"", severity:"", job_ref:"", item_no:"", description:"",
       self_resolved:false, self_resolve_note:"",
       hours_h:"", hours_m:"0", photos:[],
       active_chips:[], active_resolve_chips:[],
@@ -903,6 +915,7 @@ async function renderMySubmissions() {
           <div class="fault-type-row">
             <span class="fault-type-label">${ft.label}</span>
             ${f.job_ref ? `<span class="fault-ref">${f.job_ref}</span>` : ""}
+            ${f.item_no ? `<span class="fault-ref" style="background:var(--purple-light);color:var(--purple)">Item: ${f.item_no}</span>` : ""}
           </div>
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:11px;font-weight:700;color:${sevColor}">${f.severity||""}</span>
